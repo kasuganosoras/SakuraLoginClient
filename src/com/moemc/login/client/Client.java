@@ -16,14 +16,19 @@ import java.util.Date;
 public class Client {
 
     public static int trynum = 0;
-    public static String hostname;
+    public static String hostname, aeskey;
     public static int port;
 
     public static void main(String[] args) {
-        if (args.length > 3) {
+        if (args.length > 4) {
             try {
                 hostname = args[0];
                 port = Integer.parseInt(args[1]);
+                aeskey = args[2];
+                if(aeskey.length() != 16) {
+                    Sora.log("Error: AES key length must be 16 chars.");
+                    System.exit(1);
+                }
                 final long timeInterval = 2000;
                 Runnable runnable = () -> {
                     while (true) {
@@ -33,7 +38,7 @@ public class Client {
                                 System.exit(1);
                             } else {
                                 TestClient client = TestClientFactory.createClient();
-                                client.send(args[2] + "/" + args[3]);
+                                client.send(AES.encrypt(aeskey, args[3] + "/" + args[4]));
                                 client.receive();
                                 Thread.sleep(timeInterval);
                                 trynum++;
@@ -53,7 +58,7 @@ public class Client {
             }
         } else {
             Sora.log("Error: Need more arguments.");
-            Sora.log("Format: java -jar SoraLoginClient.jar <hostname> <port> <username> <password>");
+            Sora.log("Format: java -jar SoraLoginClient.jar <hostname> <port> <aeskey> <username> <password>");
             System.exit(1);
         }
     }
